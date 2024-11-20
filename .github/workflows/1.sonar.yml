@@ -3,7 +3,7 @@ name: Sonar Code Review Workflow
 on:
   push:
     branches:
-      - main
+      - master
 
 
 jobs:
