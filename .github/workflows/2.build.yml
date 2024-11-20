@@ -1,19 +1,18 @@
 name: Build Workflow
 
-
 on:
-    workflow_run:
-        workflows: 
-            - Sonar Code Review Workflow
-        types:
-            - completed
+  workflow_run:
+    workflows:
+      - Sonar Code Review Workflow
+    types:
+      - completed
 
 jobs:
   build-push-image:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout source code
+        uses: actions/checkout@v3 # Updated to v3
 
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
@@ -22,29 +21,30 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
 
       - name: Install kubectl
-        run: gcloud components install kubectl
+        run: gcloud components install kubectl --quiet
 
       - name: Check kubectl version
         run: kubectl version --client
 
-      - name: Use gcloud CLI
+      - name: Display gcloud CLI info
         run: gcloud info
 
-      - name: Docker auth
+      - name: Docker Authentication
         run: gcloud auth configure-docker europe-west9-c-docker.pkg.dev --quiet
 
       - name: Set version
         id: version
-        run: echo "::set-output name=VERSION::$(git rev-parse --short HEAD)"
+        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Build and push the docker image
+      - name: Build and push Docker image
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
-          VERSION: ${{ steps.version.outputs.VERSION }}
+          VERSION: ${{ env.VERSION }}
         run: |
-          DOCKER_IMAGE="us-west2-docker.pkg.dev/${GOOGLE_PROJECT}/frontend/react-gcp:${VERSION}"
-          gcloud auth configure-docker europe-west9-c-docker.pkg.dev
+          DOCKER_IMAGE="europe-west9-c-docker.pkg.dev/${GOOGLE_PROJECT}/frontend/react-gcp:${VERSION}"
           docker build -t $DOCKER_IMAGE .
           docker push $DOCKER_IMAGE
