@@ -44,7 +44,7 @@ jobs:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          DOCKER_IMAGE="us-west2-docker.pkg.dev/${GOOGLE_PROJECT}/frontend/codewithmuh:${VERSION}"
+          DOCKER_IMAGE="us-west2-docker.pkg.dev/${GOOGLE_PROJECT}/frontend/react-gcp:${VERSION}"
           gcloud auth configure-docker europe-west9-c-docker.pkg.dev
           docker build -t $DOCKER_IMAGE .
           docker push $DOCKER_IMAGE
